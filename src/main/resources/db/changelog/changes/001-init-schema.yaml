@@ -1,0 +1,205 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-init-schema
+      author: taoufiq
+      changes:
+        - createSequence:
+            sequenceName: users_seq
+            startValue: 1
+            incrementBy: 50
+
+        - createSequence:
+            sequenceName: blog_post_seq
+            startValue: 1
+            incrementBy: 50
+
+        - createSequence:
+            sequenceName: comments_seq
+            startValue: 1
+            incrementBy: 50
+
+        # -------------------------
+        # USERS
+        # -------------------------
+        - createTable:
+            tableName: users
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  defaultValueComputed: "nextval('users_seq')"
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+
+              - column:
+                  name: firstname
+                  type: VARCHAR(255)
+
+              - column:
+                  name: lastname
+                  type: VARCHAR(255)
+
+              - column:
+                  name: email
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+                    unique: true
+
+              - column:
+                  name: password_hash
+                  type: VARCHAR(60)
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: role
+                  type: VARCHAR(50)
+                  defaultValue: USER
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: updated_at
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+
+
+        - createTable:
+            tableName: blog_post
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  defaultValueComputed: "nextval('blog_post_seq')"
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+
+              - column:
+                  name: title
+                  type: VARCHAR(150)
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: content
+                  type: TEXT
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: slug
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+                    unique: true
+
+              - column:
+                  name: author_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: updated_at
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+
+        - addForeignKeyConstraint:
+            baseTableName: blog_post
+            baseColumnNames: author_id
+            referencedTableName: users
+            referencedColumnNames: id
+            constraintName: fk_blog_post_author
+            onDelete: RESTRICT
+
+        - createTable:
+            tableName: comments
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  defaultValueComputed: "nextval('comments_seq')"
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+
+              - column:
+                  name: content
+                  type: VARCHAR(255)
+
+              - column:
+                  name: author_id
+                  type: BIGINT
+
+              - column:
+                  name: blog_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: updated_at
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+
+        - addForeignKeyConstraint:
+            baseTableName: comments
+            baseColumnNames: author_id
+            referencedTableName: users
+            referencedColumnNames: id
+            constraintName: fk_comments_author
+            onDelete: SET NULL
+
+        - addForeignKeyConstraint:
+            baseTableName: comments
+            baseColumnNames: blog_id
+            referencedTableName: blog_post
+            referencedColumnNames: id
+            constraintName: fk_comments_blog
+            onDelete: CASCADE
+
+        - createIndex:
+            tableName: comments
+            indexName: idx_comments_blog_id
+            columns:
+              - column:
+                  name: blog_id
+
+        - createIndex:
+            tableName: comments
+            indexName: idx_comments_author_id
+            columns:
+              - column:
+                  name: author_id
+
+
